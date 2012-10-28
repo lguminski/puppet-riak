@@ -138,8 +138,6 @@ class riak (
 
   package { $riak::params::deps:
     ensure  => $manage_package,
-    require => Anchor['riak::start'],
-    before  => Anchor['riak::end'],
   }
 
   if $use_repos == true {
@@ -148,17 +146,13 @@ class riak (
       require => [
         Class[riak::config],
         Package[$riak::params::deps],
-        Anchor['riak::start'],
       ],
-      before  => Anchor['riak::end'],
     }
   } else {
     httpfile {  $pkgfile:
       ensure  => present,
       source  => $download,
       hash    => $download_hash,
-      require => Anchor['riak::start'],
-      before  => Anchor['riak::end'],
     }
     package { 'riak':
       ensure   => $manage_package,
@@ -167,17 +161,13 @@ class riak (
       require  => [
         Httpfile[$pkgfile],
         Package[$riak::params::deps],
-        Anchor['riak::start'],
       ],
-      before   => Anchor['riak::end'],
     }
   }
 
   file { $etc_dir:
     ensure  => directory,
     mode    => '0755',
-    require => Anchor['riak::start'],
-    before  => Anchor['riak::end'],
   }
 
   class { 'riak::appconfig':
@@ -213,8 +203,6 @@ class riak (
 
   group { 'riak':
     ensure => present,
-    require => Anchor['riak::start'],
-    before  => Anchor['riak::end'],
   }
 
   user { 'riak':
@@ -223,9 +211,7 @@ class riak (
     home    => $data_dir,
     require => [
       Group['riak'],
-      Anchor['riak::start'],
     ],
-    before  => Anchor['riak::end'],
   }
 
   service { 'riak':
@@ -237,9 +223,7 @@ class riak (
       Class['riak::config'],
       User['riak'],
       Package['riak'],
-      Anchor['riak::start'],
     ],
-    before  => Anchor['riak::end'],
   }
 
   anchor { 'riak::end': }
