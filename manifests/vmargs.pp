@@ -47,15 +47,10 @@ class riak::vmargs (
     default => $source,
   }
 
-  anchor { 'riak::vmargs::start': }
-
   file { '/etc/riak/vm.args':
     ensure  => $manage_file,
     content => $manage_template,
     source  => $manage_source,
-    require => Anchor['riak::vmargs::start'],
-    before  => Anchor['riak::vmargs::end'],
   }
 
-  anchor { 'riak::vmargs::end': }
 }
