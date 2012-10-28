@@ -27,9 +27,7 @@ class riak::appconfig(
   $source = hiera('source', ''),
   $template = hiera('template', ''),
   $absent = false
-) {
-
-  require riak::params
+) inherits riak::params {
 
   # merge the given $cfg parameter with the default,
   # favoring the givens, rather than the defaults
