@@ -28,7 +28,12 @@ class riak::appconfig(
   $template = hiera('template', ''),
   $absent = false,
   $search_enabled = hiera('search_enabled', false),
-  $ring_size = hiera('ring_creation_size', 64)
+  $ring_size = hiera('ring_creation_size', 64),
+  $default_bucket_props_n_val = hiera('default_bucket_props.n_val', 3),
+  $target_n_val = hiera('target_n_val', 5),
+  $http_url_encoding = hiera('http_url_encoding', 'off'),
+  $legacy_keylisting = hiera('legacy_keylisting', 'false'),
+  $storage_backend = hiera('storage_backend', 'riak_kv_eleveldb_backend')
 ) {
 
   require riak::params
@@ -57,9 +62,13 @@ class riak::appconfig(
       platform_etc_dir  => $riak::params::etc_dir,
       platform_lib_dir  => $riak::params::lib_dir,
       platform_log_dir  => $riak::params::log_dir,
+      default_bucket_props => {
+        n_val => $default_bucket_props_n_val,
+      },
+      target_n_val => $target_n_val,
     },
     riak_kv => {
-      storage_backend       => '__atom_riak_kv_bitcask_backend',
+      storage_backend       => $storage_backend,
       mapred_name           => 'mapred',
       mapred_system         => 'pipe',
       mapred_2i_pipe        => true,
@@ -68,9 +77,9 @@ class riak::appconfig(
       hook_js_vm_count      => 2,
       js_max_vm_mem         => 8,
       js_thread_stack       => 16,
-      http_url_encoding     => 'on',
+      http_url_encoding     => $http_url_encoding,
       vnode_vclocks         => true,
-      legacy_keylisting     => false,
+      legacy_keylisting     => $legacy_keylisting,
       listkeys_backpressure => true,
     },
     riak_search => {
