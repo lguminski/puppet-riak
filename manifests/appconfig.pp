@@ -77,9 +77,9 @@ class riak::appconfig(
       hook_js_vm_count      => 2,
       js_max_vm_mem         => 8,
       js_thread_stack       => 16,
-      http_url_encoding     => $http_url_encoding,
+      http_url_encoding     => "__atom_${http_url_encoding}",
       vnode_vclocks         => true,
-      legacy_keylisting     => $legacy_keylisting,
+      legacy_keylisting     => "__atom_${legacy_keylisting}",
       listkeys_backpressure => true,
     },
     riak_search => {
