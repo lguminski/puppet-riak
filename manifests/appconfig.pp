@@ -68,7 +68,7 @@ class riak::appconfig(
       target_n_val => $target_n_val,
     },
     riak_kv => {
-      storage_backend       => $storage_backend,
+      storage_backend       => "__atom_${storage_backend}",
       mapred_name           => 'mapred',
       mapred_system         => 'pipe',
       mapred_2i_pipe        => true,
