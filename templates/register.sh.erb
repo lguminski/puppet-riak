@@ -1,0 +1,4 @@
+#!/bin/bash
+riak-admin status | grep ring_members | grep '<%= riak_node %>' >/dev/null || riak-admin cluster join 'riak@<%= riak_node %>'
+
+
