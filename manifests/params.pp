@@ -34,14 +34,14 @@ class riak::params {
     default                     => 'amd64',
   }
 
-  $version = '1.2.0'
-  $use_repos = true
+  $version = '1.2.1'
+  $use_repos = false
   $get = $::operatingsystem ? {
     /(?i:centos|redhat|Amazon)/ => "/riak/CURRENT/rhel/6/riak-${version}-1.el6.${architecture}.${package_type}",
     default                     => "/riak/CURRENT/ubuntu/precise/riak_${version}-1_${architecture}.${package_type}",
   }
 
-  $download = "http://downloads.basho.com.s3-website-us-east-1.amazonaws.com${get}"
+  $download = "puppet://modules/riak/riak-${version}-1.el6.x86_64.rpm"
 
   $download_hash = "${download}.sha"
 

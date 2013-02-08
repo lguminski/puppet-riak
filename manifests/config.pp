@@ -8,7 +8,7 @@
 
 class riak::config (
   $absent       = false,
-  $manage_repos = true,
+  $manage_repos = true
 ) {
 
   $package_repo_type = $::operatingsystem ? {

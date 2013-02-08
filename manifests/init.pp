@@ -70,24 +70,24 @@
 #   Henrik Feldt, github.com/haf/puppet-riak.
 #
 class riak (
-  $version             = hiera('version', $riak::params::version),
-  $package             = hiera('package', $riak::params::package),
-  $download            = hiera('download', $riak::params::download),
-  $use_repos           = hiera('use_repos', $riak::params::use_repos),
-  $download_hash       = hiera('download_hash', $riak::params::download_hash),
-  $source              = hiera('source', ''),
-  $template            = hiera('template', ''),
-  $architecture        = hiera('architecture', $riak::params::architecture),
-  $log_dir             = hiera('log_dir', $riak::params::log_dir),
-  $erl_log_dir         = hiera('erl_log_dir', $riak::params::erl_log_dir),
-  $etc_dir             = hiera('etc_dir', $riak::params::etc_dir),
-  $data_dir            = hiera('data_dir', $riak::params::data_dir),
-  $service_autorestart = hiera('service_autorestart', $riak::params::service_autorestart),
-  $cfg                 = hiera_hash('cfg', {}),
-  $vmargs_cfg          = hiera_hash('vmargs_cfg', {}),
+  $version             = $riak::params::version,
+  $package             = $riak::params::package,
+  $download            = $riak::params::download,
+  $use_repos           = $riak::params::use_repos,
+  $download_hash       = $riak::params::download_hash,
+  $source              = '',
+  $vmargs_template     = "riak/vm.args.erb",
+  $template            = "riak/app.config.erb",
+  $architecture        = $riak::params::architecture,
+  $log_dir             = $riak::params::log_dir,
+  $erl_log_dir         = $riak::params::erl_log_dir,
+  $etc_dir             = $riak::params::etc_dir,
+  $data_dir            = $riak::params::data_dir,
+  $service_autorestart = $riak::params::service_autorestart,
   $disable             = false,
   $disableboot         = false,
   $absent              = false,
+  $riak_node           = 'test-akka-001.flatns.net'
 ) inherits riak::params {
 
   include stdlib
@@ -146,32 +146,40 @@ class riak (
     package { $package:
       ensure  => $manage_package,
       require => [
-        Class[riak::config],
+        Class['riak::config'],
         Package[$riak::params::deps],
         Anchor['riak::start'],
       ],
       before  => Anchor['riak::end'],
     }
   } else {
-    httpfile {  $pkgfile:
-      ensure  => present,
-      source  => $download,
-      hash    => $download_hash,
-      require => Anchor['riak::start'],
-      before  => Anchor['riak::end'],
-    }
+    #file {  $pkgfile:
+    #  ensure  => present,
+    #  source  => $download,
+    #  require => Anchor['riak::start'],
+    #  before  => Anchor['riak::end'],
+    #}
     package { 'riak':
       ensure   => $manage_package,
       source   => $pkgfile,
       provider => $riak::params::package_provider,
       require  => [
-        Httpfile[$pkgfile],
+    #    File[$pkgfile],
         Package[$riak::params::deps],
         Anchor['riak::start'],
       ],
       before   => Anchor['riak::end'],
     }
   }
+
+    package { 'avahi-tools':
+      ensure   => $manage_package,
+      require  => [
+    #    File[$pkgfile],
+        Anchor['riak::start'],
+      ],
+      before   => Anchor['riak::end'],
+    }
 
   file { $etc_dir:
     ensure  => directory,
@@ -180,11 +188,24 @@ class riak (
     before  => Anchor['riak::end'],
   }
 
+  file { "/tmp/register.sh":
+    ensure  => $manage_file,
+    mode    => '0755',
+    content => template('riak/register.sh.erb'),
+    require => Anchor['riak::start'],
+    before  => Anchor['riak::end']
+  }
+
+ exec { 'register_riak':
+   command => '/tmp/register.sh',
+   logoutput => "on_failure",
+   require => [ File['/tmp/register.sh'] ],
+ }
+
+
   class { 'riak::appconfig':
     absent   => $absent,
-    source   => $source,
     template => $template,
-    cfg      => $cfg,
     require  => [
       File[$etc_dir],
       Anchor['riak::start'],
@@ -202,7 +223,7 @@ class riak (
 
   class { 'riak::vmargs':
     absent  => $absent,
-    cfg     => $vmargs_cfg,
+    template => $vmargs_template,
     require => [
       File[$etc_dir],
       Anchor['riak::start'],

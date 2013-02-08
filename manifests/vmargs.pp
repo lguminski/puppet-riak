@@ -12,25 +12,11 @@
 #   with source.
 #
 class riak::vmargs (
-  $cfg         = {},
-  $erl_log_dir = hiera('erl_log_dir', $riak::params::erl_log_dir),
-  $template    = hiera('vm_args_template', ''),
-  $source      = hiera('vm_args_source', ''),
-  $absent      = false,
+  $erl_log_dir = $riak::params::erl_log_dir,
+  $template    = '',
+  $source      = '',
+  $absent      = false
 ) inherits riak::params {
-
-  $vmargs_cfg = merge({
-    '-name'      => "riak@${::ipaddress}",
-    '-setcookie' => 'riak',
-    '-ip'        => $::ipaddress,
-    '+K'         => true,
-    '+A'         => 64,
-    '-smp'       => 'enable',
-    '-env'       => {
-      'ERL_MAX_PORTS'  => 4096,
-      'ERL_CRASH_DUMP' => "${$erl_log_dir}/erl_crash.dmp",
-    }
-  }, $cfg)
 
   $manage_file = $absent ? {
     true    => 'absent',
@@ -38,7 +24,6 @@ class riak::vmargs (
   }
 
   $manage_template = $template ? {
-    ''      => write_erl_args($vmargs_cfg),
     default => template($template),
   }
 
